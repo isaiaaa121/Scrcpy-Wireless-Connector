@@ -11,7 +11,7 @@ ADB = BASE / "adb.exe"
 SCRCPY = BASE / "scrcpy.exe"
 
 
-def ejecutar_adb(args):
+def run_adb(args):
     return subprocess.run(
         [str(ADB)] + args,
         capture_output=True,
@@ -21,258 +21,258 @@ def ejecutar_adb(args):
     )
 
 
-def generar_texto(longitud=10):
-    caracteres = string.ascii_letters + string.digits
+def generate_text(length=10):
+    characters = string.ascii_letters + string.digits
     return "".join(
-        secrets.choice(caracteres)
-        for _ in range(longitud)
+        secrets.choice(characters)
+        for _ in range(length)
     )
 
 
-def mostrar_qr(datos):
+def display_qr(data):
     qr = qrcode.QRCode(
         border=4,
         box_size=1
     )
-    qr.add_data(datos)
+    qr.add_data(data)
     qr.make(fit=True)
 
-    matriz = qr.get_matrix()
+    matrix = qr.get_matrix()
 
-    for i in range(0, len(matriz), 2):
-        fila1 = matriz[i]
-        fila2 = (
-            matriz[i + 1]
-            if i + 1 < len(matriz)
-            else [False] * len(fila1)
+    for i in range(0, len(matrix), 2):
+        row1 = matrix[i]
+        row2 = (
+            matrix[i + 1]
+            if i + 1 < len(matrix)
+            else [False] * len(row1)
         )
 
         print("".join(
-            "▀" if arriba and not abajo else
-            "▄" if abajo and not arriba else
-            "█" if arriba and abajo else
+            "▀" if top and not bottom else
+            "▄" if bottom and not top else
+            "█" if top and bottom else
             " "
-            for arriba, abajo in zip(fila1, fila2)
+            for top, bottom in zip(row1, row2)
         ))
 
 
-def servicios_adb():
-    resultado = ejecutar_adb(["mdns", "services"])
-    servicios = []
+def adb_services():
+    result = run_adb(["mdns", "services"])
+    services = []
 
-    for linea in resultado.stdout.splitlines():
-        partes = linea.split()
+    for line in result.stdout.splitlines():
+        parts = line.split()
 
-        if len(partes) >= 3 and "_adb-tls-" in partes[1]:
-            servicios.append({
-                "nombre": partes[0],
-                "tipo": partes[1],
-                "direccion": partes[2]
+        if len(parts) >= 3 and "_adb-tls-" in parts[1]:
+            services.append({
+                "name": parts[0],
+                "type": parts[1],
+                "address": parts[2]
             })
 
-    return servicios
+    return services
 
 
-def esperar_servicio(tipo, nombre=None, ip=None, segundos=120):
-    inicio = time.time()
+def wait_for_service(service_type, name=None, ip=None, seconds=120):
+    start_time = time.time()
 
-    while time.time() - inicio < segundos:
-        for servicio in servicios_adb():
+    while time.time() - start_time < seconds:
+        for service in adb_services():
 
-            if tipo not in servicio["tipo"]:
+            if service_type not in service["type"]:
                 continue
 
-            if nombre and nombre not in servicio["nombre"]:
+            if name and name not in service["name"]:
                 continue
 
-            if ip and not servicio["direccion"].startswith(ip + ":"):
+            if ip and not service["address"].startswith(ip + ":"):
                 continue
 
-            return servicio
+            return service
 
         time.sleep(1)
 
     return None
 
 
-def emparejar_manual():
-    print("\n=== CONEXION MANUAL ===")
+def manual_pairing():
+    print("\n=== MANUAL CONNECTION ===")
 
-    direccion = input("IP:PUERTO de vinculacion: ").strip()
+    address = input("Pairing IP:PORT: ").strip()
 
-    if not direccion:
+    if not address:
         return None
 
-    codigo = input("Codigo de vinculacion: ").strip()
+    code = input("Pairing code: ").strip()
 
-    resultado = ejecutar_adb(["pair", direccion, codigo])
+    result = run_adb(["pair", address, code])
 
-    print(resultado.stdout)
-    print(resultado.stderr)
+    print(result.stdout)
+    print(result.stderr)
 
-    if resultado.returncode != 0:
-        print("[ERROR] No se pudo emparejar.")
+    if result.returncode != 0:
+        print("[ERROR] Pairing failed.")
         return None
 
-    return input("IP:PUERTO de conexion: ").strip()
+    return input("Connection IP:PORT: ").strip()
 
 
-def emparejar_qr(nombre, clave):
-    print("\n[*] Esperando escaneo QR (120 segundos)...")
+def qr_pairing(name, password):
+    print("\n[*] Waiting for QR scan (120 seconds)...")
 
-    servicio = esperar_servicio(
+    service = wait_for_service(
         "_adb-tls-pairing._tcp",
-        nombre=nombre,
-        segundos=120
+        name=name,
+        seconds=120
     )
 
-    if not servicio:
-        print("\n[AVISO] No se detecto el dispositivo.")
+    if not service:
+        print("\n[WARNING] Device not detected.")
         return None
 
-    direccion = servicio["direccion"]
+    address = service["address"]
 
-    print("\n[OK] Dispositivo detectado:", direccion)
-    print("[*] Emparejando...")
+    print("\n[OK] Device detected:", address)
+    print("[*] Pairing...")
 
-    resultado = ejecutar_adb([
+    result = run_adb([
         "pair",
-        direccion,
-        clave
+        address,
+        password
     ])
 
-    print(resultado.stdout)
-    print(resultado.stderr)
+    print(result.stdout)
+    print(result.stderr)
 
-    if resultado.returncode != 0:
-        print("[ERROR] Fallo el emparejamiento QR.")
+    if result.returncode != 0:
+        print("[ERROR] QR pairing failed.")
         return None
 
-    ip = direccion.rsplit(":", 1)[0]
+    ip = address.rsplit(":", 1)[0]
 
-    print("\n[*] Buscando conexion ADB...")
+    print("\n[*] Searching for ADB connection...")
 
-    servicio = esperar_servicio(
+    service = wait_for_service(
         "_adb-tls-connect._tcp",
         ip=ip,
-        segundos=60
+        seconds=60
     )
 
-    if servicio:
-        return servicio["direccion"]
+    if service:
+        return service["address"]
 
-    print("[AVISO] No se encontro el puerto automaticamente.")
+    print("[WARNING] Connection port not found automatically.")
 
-    return input("IP:PUERTO de conexion: ").strip()
+    return input("Connection IP:PORT: ").strip()
 
 
-def iniciar_scrcpy():
+def start_scrcpy():
     while True:
-        print("\n[*] Iniciando scrcpy...")
+        print("\n[*] Starting scrcpy...")
 
         subprocess.run(
             [str(SCRCPY), "--no-audio"],
             cwd=str(BASE)
         )
 
-        respuesta = input(
-            "\n¿Quieres volver a abrir scrcpy? (S/N): "
+        answer = input(
+            "\nDo you want to restart scrcpy? (Y/N): "
         ).strip().lower()
 
-        if respuesta != "s":
+        if answer != "y":
             break
 
 
 def main():
     print("=" * 55)
-    print("          SCRCPY WIRELESS CONNECTOR")
+    print("          SCRCPY WIRELESS CONNECTOR V5.0.1")
     print("=" * 55)
 
     if not ADB.exists() or not SCRCPY.exists():
-        print("\n[ERROR] No encuentro adb.exe o scrcpy.exe.")
-        input("Enter para salir...")
+        print("\n[ERROR] adb.exe or scrcpy.exe not found.")
+        input("Press Enter to exit...")
         return
 
-    nombre = "studio-" + generar_texto()
-    clave = generar_texto()
+    name = "studio-" + generate_text()
+    password = generate_text()
 
-    datos = f"WIFI:T:ADB;S:{nombre};P:{clave};;"
+    data = f"WIFI:T:ADB;S:{name};P:{password};;"
 
-    print("\n=== CONEXION MANUAL ===")
-    print("Puedes introducir la IP y el codigo manualmente.")
-    print("Si quieres usar QR, deja la IP vacia.")
+    print("\n=== MANUAL CONNECTION ===")
+    print("You can enter the IP address and pairing code manually.")
+    print("To use QR pairing, leave the IP address empty.")
 
-    print("\n=== CONEXION POR QR ===")
-    print("Escanea este codigo desde tu dispositivo:\n")
+    print("\n=== QR CONNECTION ===")
+    print("Scan this QR code with your device:\n")
 
-    mostrar_qr(datos)
+    display_qr(data)
 
     print("\n---------------------------------------")
-    print("Deja la IP vacia para utilizar el QR.")
+    print("Leave the IP address empty to use QR.")
     print("---------------------------------------")
 
-    direccion = input(
-        "\nIP:PUERTO de vinculacion: "
+    address = input(
+        "\nPairing IP:PORT: "
     ).strip()
 
-    if direccion:
-        codigo = input("Codigo de vinculacion: ").strip()
+    if address:
+        code = input("Pairing code: ").strip()
 
-        resultado = ejecutar_adb([
+        result = run_adb([
             "pair",
-            direccion,
-            codigo
+            address,
+            code
         ])
 
-        print(resultado.stdout)
-        print(resultado.stderr)
+        print(result.stdout)
+        print(result.stderr)
 
-        if resultado.returncode != 0:
-            print("[ERROR] Fallo el emparejamiento manual.")
-            input("Enter para salir...")
+        if result.returncode != 0:
+            print("[ERROR] Manual pairing failed.")
+            input("Press Enter to exit...")
             return
 
-        conexion = input(
-            "IP:PUERTO de conexion: "
+        connection = input(
+            "Connection IP:PORT: "
         ).strip()
 
     else:
-        conexion = emparejar_qr(nombre, clave)
+        connection = qr_pairing(name, password)
 
-        if not conexion:
-            print("\n=== CONEXION MANUAL ===")
-            conexion = emparejar_manual()
+        if not connection:
+            print("\n=== MANUAL CONNECTION ===")
+            connection = manual_pairing()
 
-            if not conexion:
-                print("[ERROR] No se pudo establecer la conexion.")
-                input("Enter para salir...")
+            if not connection:
+                print("[ERROR] Could not establish a connection.")
+                input("Press Enter to exit...")
                 return
 
-    print("\n[*] Conectando...")
+    print("\n[*] Connecting...")
 
-    resultado = ejecutar_adb([
+    result = run_adb([
         "connect",
-        conexion
+        connection
     ])
 
-    print(resultado.stdout)
-    print(resultado.stderr)
+    print(result.stdout)
+    print(result.stderr)
 
-    dispositivos = ejecutar_adb(["devices"])
+    devices = run_adb(["devices"])
 
     if not any(
-        linea.strip().endswith("\tdevice")
-        for linea in dispositivos.stdout.splitlines()
+        line.strip().endswith("\tdevice")
+        for line in devices.stdout.splitlines()
     ):
-        print("[ERROR] No hay dispositivos autorizados conectados.")
-        input("Enter para salir...")
+        print("[ERROR] No authorized devices connected.")
+        input("Press Enter to exit...")
         return
 
-    print("\n[OK] Conexion establecida!")
+    print("\n[OK] Connection established!")
 
-    iniciar_scrcpy()
+    start_scrcpy()
 
-    input("\nPresiona Enter para cerrar...")
+    input("\nPress Enter to close...")
 
 
 if __name__ == "__main__":

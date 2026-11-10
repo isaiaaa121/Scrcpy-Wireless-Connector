@@ -1,5 +1,5 @@
 @echo off
-title Scrcpy Wireless Connector
+title Scrcpy Wireless Connector V5.0.1
 color 07
 chcp 65001 >nul
 mode con: cols=100 lines=55
