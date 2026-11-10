@@ -2,9 +2,7 @@
 
 
 
-A Windows tool to connect Android devices wirelessly
-
-using ADB and scrcpy.
+A Windows tool to connect Android devices wirelessly using ADB and scrcpy.
 
 
 
@@ -48,13 +46,15 @@ using ADB and scrcpy.
 
 
 
+&#x20;  ```bash
+
 &#x20;  pip install -r requirements.txt
 
+&#x20;  ```
 
 
-3\. Place adb.exe and scrcpy.exe
 
-&#x20;  in the project folder.
+3\. Place `adb.exe` and `scrcpy.exe` in the project folder.
 
 
 
@@ -62,7 +62,7 @@ using ADB and scrcpy.
 
 
 
-Run Scrcpy-Wireless-Connector.bat.
+Run `Scrcpy-Wireless-Connector-V5.0.1.bat`.
 
 
 
@@ -74,13 +74,7 @@ Follow the instructions displayed in the terminal.
 
 
 
-\## Version
-
-
-
-V5.0.1
-
-## Credits
+\## Credits
 
 
 
@@ -93,4 +87,12 @@ Special thanks to the Genymobile team for creating and maintaining this excellen
 
 
 \*\*scrcpy is a separate project and is not affiliated with Scrcpy Wireless Connector.\*\*
+
+
+
+\## Version
+
+
+
+V5.0.1
 
