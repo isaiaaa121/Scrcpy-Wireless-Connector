@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.log
+
+# Ejecutables y archivos de scrcpy
+/adb.exe
+/scrcpy.exe
+/*.dll
+/scrcpy-server
+/disconnected.png
+/scrcpy.png
+/scrcpy-noconsole.vbs
+/open_a_terminal_here.bat
