@@ -1,4 +1,9 @@
 # Scrcpy Wireless Connector V5.0.1
+<p align="center">
+  <a href="mailto:scrcpywireless.support@gmail.com">
+    <strong>SUPPORT</strong>
+  </a>
+</p>
 
 A Windows tool to connect Android devices wirelessly using ADB and scrcpy.
 
