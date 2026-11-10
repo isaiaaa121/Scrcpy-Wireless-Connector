@@ -80,3 +80,17 @@ Follow the instructions displayed in the terminal.
 
 V5.0.1
 
+## Credits
+
+
+
+This project uses \[scrcpy](https://github.com/Genymobile/scrcpy), developed by \[Genymobile](https://github.com/Genymobile).
+
+
+
+Special thanks to the Genymobile team for creating and maintaining this excellent open-source tool.
+
+
+
+\*\*scrcpy is a separate project and is not affiliated with Scrcpy Wireless Connector.\*\*
+
