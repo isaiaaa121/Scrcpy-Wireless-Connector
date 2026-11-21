@@ -14,15 +14,10 @@ scrcpywireless.support@gmail.com
 
 #### Features
 
-
 \- Wireless ADB connection
-
 \- Manual pairing
-
 \- QR code pairing (experimental)
-
 \- Automatic scrcpy launch
-
 \- Audio disabled by default
 
 
@@ -31,35 +26,23 @@ scrcpywireless.support@gmail.com
 
 
 \- Windows 10 or newer
-
 \- Python 3
-
 \- ADB
-
 \- scrcpy
 
 
 #### Installation
 
-
 1\. Install Python 3.
-
 2\. Install dependencies:
-
 &#x20;  ```bash
-
 &#x20;  pip install -r requirements.txt
-
 &#x20;  ```
-
 3\. Place `adb.exe` and `scrcpy.exe` in the project folder.
 
 \## Usage
-
 Run `Scrcpy-Wireless-Connector-V5.0.1.bat`.
-
 Enable Wireless Debugging on your Android device.
-
 Follow the instructions displayed in the terminal.
 
 
@@ -76,6 +59,5 @@ The logo for Scrcpy Wireless Connector (SWC) was generated with ChatGPT, an AI t
 
 
 #### Version
-
 V5.0.1
 
